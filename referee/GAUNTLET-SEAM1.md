@@ -1,7 +1,10 @@
 # GAUNTLET-SEAM1 — Opening Problem: "Add a Lock to the Mint"
 
 *Referee · Shell 4 opener · drafted 2026-08-29 from R2-SCORES.md (the Gauntlet
-section) and R2-PACKETS.md. House law holds: every claim cites file+line or a
+section) and R2-PACKETS.md; **sharpened 2026-08-30 after the rebuttal round**
+(R2-REBUTTALS.md §4: the re-derivation-tautology theorem, co-signed by
+deadband and ledger — the lock must be KEYED; tests G1/G2 restated
+accordingly, §2). House law holds: every claim cites file+line or a
 measured number from the R2 record; no float decides a verdict.*
 
 ---
@@ -46,47 +49,86 @@ them, without selling the house to buy the lock.
 
 ---
 
-## 2. Acceptance tests (verbatim from the two R2 exploits)
+## 2. Acceptance tests (verbatim from the two R2 exploits, SHARPENED after the rebuttal round)
 
 Both tests are machine-checked, one command, integer verdicts
 (PASS/FAIL, no floats, no network).
 
-### Test G1 — forged fold receipt must be REJECTED at load
+**Sharpening of record (2026-08-30, from R2-REBUTTALS):** the five
+defenders re-executed their attackers' exploits with zero measurement
+disputes, and two of them — from opposite ends of the ring — independently
+stated the theorem that re-cuts these tests. DEADBAND (REBUTTAL §3): "for
+the *sum-preserving* class, re-derivation alone is insufficient by
+construction (the live gate's own invariant is what the corruption
+preserves — LEDGER's exhibit measured 50/50 gate passes), so a keyed MAC
+is the load-bearing half of any G2 pass everywhere." LEDGER (REBUTTAL
+§2), the exhibit's own defender: "a 're-derive conservation on load' fix
+re-runs the same tautology the attack exposed." The referee verified the
+predicate at the source (`audit.py:34-44`, `support_bound` derives from
+the dial; `fabric.rs:239`, name-uniqueness is the only load gate; the
+tautology is in the code, not the prose). Consequence: **a re-derivation
+path that merely re-runs an invariant the corruption preserves cannot
+pass these tests. The lock must be KEYED.** Both tests below now require
+it. This is not a softening of the problem — it is the problem, stated
+at its true strength: an adversary (or accident) that can recompute
+every public function of the image defeats every keyless check by
+construction. Submissions live or die on the §4 custody-honesty clause.
 
-Reproduce LEDGER→SHIPWRIGHT Exhibit A as the test vector:
+### Test G1 — forged fold receipt with a RECOMPUTED, KEYLESS TAG must be REJECTED at load (the lock must be KEYED)
+
+Reproduce LEDGER→SHIPWRIGHT Exhibit A as the test vector, with the
+adversary granted full knowledge of the algorithm and zero key material:
 
 1. Take a legitimate fold image; mint custody by modifying 8 body bytes
    (e.g. +10 fish HOLD / +10 matching tally) and recomputing the
-   checksum/MAC over the result, **without any key** (the R2 attack cost:
-   16 bytes touched, 17.9 µs).
+   checksum/tag/MAC over the result **as a public function with no key**
+   (the R2 attack cost: 16 bytes touched, 17.9 µs). If the submission's
+   lock is keyed, the test recomputes the *public* portion only (e.g.
+   structure, lengths, any unkeyed digest) — exactly what an
+   algorithm-aware, key-less adversary can do.
 2. Attempt `qc_unfold`-equivalent load.
-3. **PASS iff:** the load is refused with a **booked reason** (not a crash,
-   not a silent partial load, not `ST_OK`). The refusal must be a
-   distinguishable, citable reason code — "refused ≠ silent, ever" applies
-   to the fold layer now.
+3. **PASS iff BOTH:** (a) the load is refused with a **booked reason**
+   (not a crash, not a silent partial load, not `ST_OK`) — a
+   distinguishable, citable reason code; and (b) the refusal is
+   attributable to the **keyed** check: the submission's lock involves
+   key material without which the recomputed tag cannot satisfy the
+   verification. An unkeyed digest/checksum over the image (however
+   strong the hash) does not qualify — the adversary recomputes it by
+   construction, which is the R2 outcome.
 4. **FAIL conditions:** load succeeds (`ST_OK`/equivalent); load succeeds
-   with round-trip canonicality (the forged image is accepted as a valid
+   with round-trip canonicality (the forged image accepted as a valid
    state — this is exactly the R2 outcome and it fails); view reports
-   `VD_ACCEPT` on phantom custody.
+   `VD_ACCEPT` on phantom custody; **or** the only thing standing between
+   the forge and the load is a public function (a keyless lock — the
+   printed-on-safe, scored at its honest strength and FAILED here).
 
-### Test G2 — sum-preserving corruption committed then reloaded must be DETECTED
+### Test G2 — sum-preserving corruption committed then reloaded must be DETECTED — and re-derivation of a preserved invariant is TAUTOLOGICAL
 
 Reproduce DEADBAND→LEDGER Exhibit B as the test vector:
 
 1. Commit a sum-preserving `+7/−7` corruption across two accounts
    (gate-evasive by construction — R2 measured 50/50 pass the trial
    balance; journal-retained replay catches 100%, journal-absent catches
-   0%).
-2. Fold, then reload the image **with no journal** (the recovery regime the
-   philosophy advertises).
-3. **PASS iff:** the corruption is **either rejected with a booked reason or
-   visibly quarantined** (an operator-readable marker, not a silent load).
-   Re-derivation of the live gate's claimed invariants on load, or an
-   authenticated fold that the corrupted hand-edit cannot satisfy, both
-   qualify.
-4. **FAIL condition:** **silent acceptance** — the corrupted balances load
-   as truth with no signal. This is the exact R2 outcome ("a disk-less/
-   truncated recovery silently resurrects corrupted books") and it fails.
+   0%). The live gate's claimed invariant — the trial balance — is
+   exactly what this corruption preserves.
+2. Fold, then reload the image **with no journal** (the recovery regime
+   the philosophy advertises).
+3. **PASS iff:** the corruption is **either** (a) rejected with a booked
+   reason or visibly quarantined **via a keyed check the hand-edit
+   cannot satisfy without the key** — the load-bearing path; **or** (b)
+   for submissions claiming re-derivation instead of keys, the
+   re-derivation checks an invariant the sum-preserving corruption does
+   NOT preserve (e.g. per-account kind/sign constraints, custody-origin
+   invariants, cross-anchoring to an authenticated chain head) — and the
+   submission states in writing which invariant, and why the +7/−7 edit
+   breaks it. Re-deriving conservation alone earns **zero credit for
+   this class**: it re-runs the gate's own tautology (deadband/ledger's
+   co-signed theorem, R2-REBUTTALS §4.2).
+4. **FAIL condition:** **silent acceptance** — the corrupted balances
+   load as truth with no signal (the exact R2 outcome); **or** a
+   "re-derivation" whose only check is the trial balance / global sums
+   (tautological for this vector by construction — failed, and named as
+   such in the scorecard).
 
 ---
 
@@ -147,7 +189,7 @@ The submission must contain a written custody section answering, at minimum:
 
 | pillar | pts | measures |
 |---|---|---|
-| **A. authentication strength** | 40 | G1 and G2 pass machine-checked (20 each). Partial credit only for verified quarantine paths on G2. Claim-scope honesty is scored here too: the written custody section (§4) must match what the tests actually demonstrate — no embedded-key solution scored as operator-key-security. |
+| **A. authentication strength** | 40 | G1 and G2 pass machine-checked (20 each), **against the restated keyed requirements (§2)**: G1's refusal must be attributable to key material a public-function recompute cannot satisfy; G2's detection must be keyed or must re-derive an invariant the sum-preserving vector demonstrably breaks (stated in writing) — global-sum/trial-balance re-derivation alone scores zero on G2 as tautological. Partial credit only for verified quarantine paths on G2. Claim-scope honesty is scored here too: the written custody section (§4) must match what the tests actually demonstrate — no embedded-key solution scored as operator-key-security. |
 | **B. custody honesty** | 20 | The written section §4, complete: key location, write authority, key-loss procedure, explicit scope. Deductions for implied claims, silent assumptions, or a key-loss story that is a brick wall with no booking. |
 | **C. performance cost (measured)** | 20 | Fold/unfold and load-path costs re-measured with auth in place, compared against the R2 baselines: shipwright fold+unfold ~37 µs (C12), ~24 ns/op effect (C11); ledger 16.38 µs close, 1.48 M events/s, QUF 9,216 B. Report deltas as measured integers (µs, ns/op, bytes). Zero-to-single-digit-percent overhead scores full; order-of-magnitude regressions score near zero unless the cost is argued as load-path-only and booked. Image growth, if any, booked in bytes per §3.3. |
 | **D. constraint fidelity** | 15 | Five-verb law intact (3), one-command run intact (5), bounded images / booked growth (3), no floats / no network (4). Automatic deductions per violation; a broken one-command run zeroes the pillar. |
@@ -191,6 +233,8 @@ loses points; the referee re-verifies one killer citation per submission.
 
 ---
 
-*End GAUNTLET-SEAM1. House law: every claim above cites a file:line or a
-measured number from the R2 record; no float decides a verdict; the lock is
-judged against the two exploits that opened it.*
+*End GAUNTLET-SEAM1 (rev. 2026-08-30). House law: every claim above cites a
+file:line or a measured number from the R2 record; no float decides a
+verdict; the lock is judged against the two exploits that opened it — and
+against the theorem the defenders proved about it: re-derivation of a
+preserved invariant is a tautology; the lock must be keyed.*

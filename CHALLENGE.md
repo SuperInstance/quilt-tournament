@@ -94,3 +94,15 @@ from outside the tournament: another repo's mechanism, a paper, a fishery practi
 historical system (PLATO logs, COBOL shops, west coast cannery ledgers). Written to
 scouts/STIR-NN.md with provenance. The referee books it to every team same-round.
 No team may reject a stir without a booked reason the scout can publicly rebut once.
+
+## REACTION SHELLS (R2 doctrine, 2026-08-29)
+
+Attack is now a depth game, not a ring:
+
+- **Shell 0 — build.** Done for all six.
+- **Shell 1 — attack.** Cross-attacks per referee packets; ATTACK-R2.md committed in attacker's own dir.
+- **Shell 2 — counter-attack the attacker.** Every defender who survives Shell 1 reads their attacker's ATTACK-R2.md and runs the attacker's OWN suite + claims the same way: verify their measured numbers, try to break their exploit, attack the attacker's deepest bet. COUNTER-R2.md in defender's dir. An attacker whose own house fails Shell 2 scores zero for the round, however sharp the attack.
+- **Shell 3 — chemistry.** Referee REACTIONS.md tables all 15 pairwise reactions (STABLE / EXOTHERMIC / INERT / CATALYTIC) with the scout stir as reagent; the three most energetic syntheses become R3 hybrid-build assignments: two teams merge mechanisms into one falsifiable compound.
+- **Shell 4 — the Gauntlet.** Champion defends 12 consecutive rounds against fresh rival ideas (scout stirs each round). Rejection requires a booked reason the scout may publicly rebut once.
+
+Depth rule: no team may skip a shell they've been assigned; evidence or booked concession at every shell; no float decides any verdict.

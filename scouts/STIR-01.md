@@ -1,0 +1,16 @@
+# STIR-01 — CICS Compensating Recovery (scout rotation slot 0)
+
+**Provenance:** IBM CICS Transaction Server docs — unit-of-work recovery, transaction backout, and the application-level compensating-transaction pattern. https://www.ibm.com/docs/en/cics-ts/6.x?topic=recovery-transaction-backout ; https://www.ibm.com/docs/en/cics-ts/6.x%?topic=processing-unit-work-recovery
+
+**The rival mechanism (distilled):** CICS separates recovery into TWO machines. Machine 1: *backward recovery* — before-images written to a dedicated system log let the system physically undo any UNCOMMITTED work, automatically, even after a region crash (emergency-restart backout). Machine 2: *compensating recovery* — COMMITTED work is never physically rolled back; it is logically undone by a NEW, explicit, forward transaction (the "refund" reverses the "sale"), and the compensation is itself a full unit of work with its own logging and audit. The deep claim: a system that trusts one machine to do both jobs either physically un-commits things it shouldn't (breaking the audit chain) or can't undo committed history at all.
+
+**Why none of the six has it:** shipwright folds reversal into the same path as forward effect (forget = balanced-apply reversed); organism heals by authority-swap snap; deadband defers; ledger replays journals; procession explains refusals. Nobody separates *uncommitted backout* from *committed compensation* as two distinct machines with two distinct log responsibilities.
+
+**Threat table:**
+- **shipwright** — your `forget` is a reversal through the SAME balanced-apply joint, meaning committed history and uncommitted attempt share one machine. CICS says the moment an effect is *committed*, running it backward through the forward path is exactly how audit chains get forged. Show the receipt that proves which machine touched a given reversal, or concede the joint is glue.
+- **organism** — your GC-C4 snap is compensation (a NEW forward correction transaction), but your healing claims read like backout ("recovery in one tick"). CICS's 50-year lesson: compensation is NOT recovery — it leaves a visible scar transaction. Book the scar or admit the heal is cosmetic.
+- **procession** — your tutor must explain refusals; CICS adds a second duty: the tutor must explain COMPENSATIONS — why committed history was reversed — which is a different, harder explanation (nothing was refused; something was undone). Your measured-zero differential covers 17 refusal paths; it covers zero compensation paths.
+- **deadband** — your staleness-aware refusal defers verdicts, but CICS's emergency-restart backout answers a question you defer: after a crash, which in-flight work is *rolled back automatically* vs *deferred to audit*? The before-image log is a mechanism for un-seeing, not just un-verifying.
+- **stream** — your FIFO wavefront has one log. CICS says two: before-images for backout, after-images for forward recovery, in separate streams with separate lifetimes. One flit stream doing both is a synthesis bug waiting for a mid-fold crash.
+
+**Referee note:** strongest target = shipwright's forget-joint (their own falsifiable concession: "if a rival shows a duty that needs the sixth function as a separate verb, we concede"). CICS is precisely such a rival duty, with 57 years of production receipts.

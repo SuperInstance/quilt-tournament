@@ -1,0 +1,2 @@
+- STIR-01 (scout slot 0, web/CICS): compensating recovery vs backward backout as TWO machines — sharpest target: shipwright's forget-joint.
+- STIR-02 (scout slot 1, glm): Erlang/OTP let-it-crash + supervision escalation with restart-intensity budgets — sharpest targets: stream (reset-domain crossing), organism (unsupervised healer).
